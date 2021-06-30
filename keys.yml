@@ -1,5 +1,0 @@
-# login to aws console, click on your name, then "my security Credentials"
-# Then create a new access key
-
-aws_access_key: "" # AWS Access Key ID
-aws_secret_key: "" # AWS Secret Access Key
