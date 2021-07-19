@@ -3,8 +3,8 @@ from boto3.dynamodb.conditions import Key
 from yaml import safe_load
 import time
 
-from matplotlib import pyplot
-
+from matplotlib import pyplot, dates
+import datetime
 
 class DbDriver:
     device_id = 'id_MzA6QUU6QTQ6RTQ6MDA6NTQ'
@@ -40,9 +40,10 @@ class Plotter:
         self.yesterday_plot = fig.add_subplot(1, 2, 2)
 
         self.plot_live()
-        print("\n\n\n")
-        self.plot_yesterday_room_occupation()
+        #print("\n\n\n")
+        #self.plot_yesterday_room_occupation()
 
+        fig.autofmt_xdate()
         pyplot.show()
 
     @staticmethod
@@ -52,8 +53,19 @@ class Plotter:
 
     def plot_live(self):
         data = self.db.query_db(oldest_timestamp=self.start_timestamp)
-        for i in data:
-            print(i)
+        x = []
+        y = []
+        for item in data:
+            timestamp = item.get("timestamp").__int__()/1000
+            dt = datetime.datetime.fromtimestamp(timestamp)
+            occupied = 1 if item.get("room_occupied") else 0
+            x.append(dt)
+            y.append(occupied)
+
+        date_fmt = '%d-%m-%y %H:%M:%S'
+        date_formatter = dates.DateFormatter(date_fmt)
+        self.live_plot.xaxis.set_major_formatter(date_formatter)
+        self.live_plot.step(x, y)
 
     def plot_yesterday_room_occupation(self):
         timestamp_yesterday = self.start_timestamp - 86400000
