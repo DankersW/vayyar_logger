@@ -7,10 +7,10 @@ import time
 
 
 class DbDriver:
-    def __init__(self, table: str):
+    def __init__(self, keys: dict, table: str):
         session = boto3.Session(
-            aws_access_key_id=config.get("aws_access_key"),  # named tuple settings
-            aws_secret_access_key=config.get("aws_secret_key"),
+            aws_access_key_id=keys.get("aws_access_key"),  # named tuple settings
+            aws_secret_access_key=keys.get("aws_secret_key"),
         )
         db = session.resource('dynamodb')
         self.db_table = db.Table(table)
@@ -29,27 +29,36 @@ class DbDriver:
         return self.db_table.scan()['Items']
 
 
+class Plotter:
+    def __init__(self):
+        self.db = DbDriver(keys=self._get_keys(), table='vayyar_home_c2c_room_status')
 
-with open("keys.yml") as config_file:
-    config = safe_load(config_file)
+        self.start_timestamp = round(time.time() * 1000)
+        self.start_timestamp = 1626686100002
 
-start_timestamp = round(time.time() * 1000)
-start_timestamp = 1626686100002
-timestamp_yesterday = start_timestamp - 86400000
+        self.plot_live()
+        print("\n\n\n")
+        self.plot_yesterday_room_occupation()
 
-db = DbDriver(table='vayyar_home_c2c_room_status')
+    @staticmethod
+    def _get_keys():
+        with open("keys.yml") as config_file:
+            return safe_load(config_file)
 
-live_data = db.query_db(oldest_timestamp=start_timestamp)
-yesterday_data = db.query_db(oldest_timestamp=timestamp_yesterday, untill_timestamp=start_timestamp)
+    def plot_live(self):
+        data = self.db.query_db(oldest_timestamp=self.start_timestamp)
+        for i in data:
+            print(i)
 
-for i in live_data:
-    print(i)
-print("test")
-for i in yesterday_data:
-    print(i)
-
-# dynamodb = boto3.resource('dynamodb', region_name='***')
+    def plot_yesterday_room_occupation(self):
+        timestamp_yesterday = self.start_timestamp - 86400000
+        yesterday_data = self.db.query_db(oldest_timestamp=timestamp_yesterday, untill_timestamp=self.start_timestamp)
+        for i in yesterday_data:
+            print(i)
 
 # todo: live plot
 # todo: day plot
 
+
+if __name__ == '__main__':
+    Plotter()
