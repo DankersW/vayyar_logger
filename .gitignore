@@ -3,10 +3,13 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+keys.yml
+
 # C extensions
 *.so
 
-# Distribution / packaging
+# Distribution / packagingNone
+.idea/
 .Python
 build/
 develop-eggs/
