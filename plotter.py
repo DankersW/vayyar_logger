@@ -1,9 +1,10 @@
 import boto3
+import matplotlib.pyplot
 from boto3.dynamodb.conditions import Key
 from yaml import safe_load
 import time
-
-from matplotlib import pyplot, dates
+from typing import Tuple
+from matplotlib import pyplot, dates, animation
 import datetime
 
 class DbDriver:
@@ -20,8 +21,8 @@ class DbDriver:
         if untill_timestamp:
             query = Key('device_id').eq(self.device_id) & Key('timestamp').between(oldest_timestamp, untill_timestamp)
         else:
-            # query = Key('device_id').eq(self.device_id) & Key('timestamp').gte(oldest_timestamp)
-            query = Key('device_id').eq(self.device_id) & Key('timestamp').between(oldest_timestamp, 1626687473931)
+            query = Key('device_id').eq(self.device_id) & Key('timestamp').gte(oldest_timestamp)
+            #query = Key('device_id').eq(self.device_id) & Key('timestamp').between(oldest_timestamp, 1626687473931)
         return self.db_table.query(KeyConditionExpression=query)['Items']
 
     def scan_db(self):
@@ -33,15 +34,15 @@ class Plotter:
         self.db = DbDriver(keys=self._get_keys(), table='vayyar_home_c2c_room_status')
 
         self.start_timestamp = round(time.time() * 1000)
-        self.start_timestamp = 1626686100002
+        #self.start_timestamp = 1626686100002
 
         fig = pyplot.figure()
-        self.live_plot = fig.add_subplot(1, 2, 1)
-        self.yesterday_plot = fig.add_subplot(1, 2, 2)
+        self.live_plot = fig.add_subplot(2, 1, 1)
+        self.yesterday_plot = fig.add_subplot(2, 1, 2)
 
-        self.plot_live()
-        #print("\n\n\n")
-        #self.plot_yesterday_room_occupation()
+        _ = animation.FuncAnimation(fig, self.plot_live, interval=300000)
+        #self.plot_live(None)
+        self.plot_yesterday_room_occupation()
 
         fig.autofmt_xdate()
         pyplot.show()
@@ -51,31 +52,36 @@ class Plotter:
         with open("keys.yml") as config_file:
             return safe_load(config_file)
 
-    def plot_live(self):
+    def plot_live(self, _):
         data = self.db.query_db(oldest_timestamp=self.start_timestamp)
-        x = []
-        y = []
-        for item in data:
-            timestamp = item.get("timestamp").__int__()/1000
-            dt = datetime.datetime.fromtimestamp(timestamp)
-            occupied = 1 if item.get("room_occupied") else 0
-            x.append(dt)
-            y.append(occupied)
-
-        date_fmt = '%d-%m-%y %H:%M:%S'
-        date_formatter = dates.DateFormatter(date_fmt)
-        self.live_plot.xaxis.set_major_formatter(date_formatter)
-        self.live_plot.step(x, y)
+        self._plot_data(sub_plot=self.live_plot, data=data)
 
     def plot_yesterday_room_occupation(self):
         timestamp_yesterday = self.start_timestamp - 86400000
         yesterday_data = self.db.query_db(oldest_timestamp=timestamp_yesterday, untill_timestamp=self.start_timestamp)
-        for i in yesterday_data:
-            print(i)
+        self._plot_data(sub_plot=self.yesterday_plot, data=yesterday_data)
+
+    def _plot_data(self, sub_plot: matplotlib.pyplot.subplot, data: list):
+        x = []
+        y = []
+        for item in data:
+            dt, room_occupied = self._parse_data_entry(entry=item)
+            x.append(dt)
+            y.append(room_occupied)
+
+        date_fmt = '%d-%m-%y %H:%M:%S'
+        date_formatter = dates.DateFormatter(date_fmt)
+        sub_plot.xaxis.set_major_formatter(date_formatter)
+        sub_plot.step(x, y)
+
+    @staticmethod
+    def _parse_data_entry(entry: dict) -> Tuple[datetime.datetime, int]:
+        timestamp = entry.get("timestamp").__int__() / 1000
+        dt = datetime.datetime.fromtimestamp(timestamp)
+        occupied = 1 if entry.get("room_occupied") else 0
+        return dt, occupied
 
 # todo: live plot
-# todo: day plot
-
 
 if __name__ == '__main__':
     Plotter()
