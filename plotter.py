@@ -3,10 +3,11 @@ from boto3.dynamodb.conditions import Key
 from yaml import safe_load
 import time
 
-#from matplotlib import pyplot
+from matplotlib import pyplot
 
 
 class DbDriver:
+    device_id = 'id_MzA6QUU6QTQ6RTQ6MDA6NTQ'
     def __init__(self, keys: dict, table: str):
         session = boto3.Session(
             aws_access_key_id=keys.get("aws_access_key"),  # named tuple settings
@@ -17,12 +18,10 @@ class DbDriver:
 
     def query_db(self, oldest_timestamp, untill_timestamp=None):
         if untill_timestamp:
-            query = Key('device_id').eq('id_MzA6QUU6QTQ6RTQ6MDA6NTQ') & Key('timestamp').between(oldest_timestamp,
-                                                                                                 untill_timestamp)
+            query = Key('device_id').eq(self.device_id) & Key('timestamp').between(oldest_timestamp, untill_timestamp)
         else:
-            # query = Key('device_id').eq('id_MzA6QUU6QTQ6RTQ6MDA6NTQ') & Key('timestamp').gte(oldest_timestamp)
-            query = Key('device_id').eq('id_MzA6QUU6QTQ6RTQ6MDA6NTQ') & Key('timestamp').between(oldest_timestamp,
-                                                                                                 1626687473931)
+            # query = Key('device_id').eq(self.device_id) & Key('timestamp').gte(oldest_timestamp)
+            query = Key('device_id').eq(self.device_id) & Key('timestamp').between(oldest_timestamp, 1626687473931)
         return self.db_table.query(KeyConditionExpression=query)['Items']
 
     def scan_db(self):
@@ -36,9 +35,15 @@ class Plotter:
         self.start_timestamp = round(time.time() * 1000)
         self.start_timestamp = 1626686100002
 
+        fig = pyplot.figure()
+        self.live_plot = fig.add_subplot(1, 2, 1)
+        self.yesterday_plot = fig.add_subplot(1, 2, 2)
+
         self.plot_live()
         print("\n\n\n")
         self.plot_yesterday_room_occupation()
+
+        pyplot.show()
 
     @staticmethod
     def _get_keys():
