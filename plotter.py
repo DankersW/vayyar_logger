@@ -7,8 +7,10 @@ from typing import Tuple
 from matplotlib import pyplot, dates, animation
 import datetime
 
+
 class DbDriver:
     device_id = 'id_MzA6QUU6QTQ6RTQ6MDA6NTQ'
+
     def __init__(self, keys: dict, table: str):
         session = boto3.Session(
             aws_access_key_id=keys.get("aws_access_key"),  # named tuple settings
@@ -22,7 +24,6 @@ class DbDriver:
             query = Key('device_id').eq(self.device_id) & Key('timestamp').between(oldest_timestamp, untill_timestamp)
         else:
             query = Key('device_id').eq(self.device_id) & Key('timestamp').gte(oldest_timestamp)
-            #query = Key('device_id').eq(self.device_id) & Key('timestamp').between(oldest_timestamp, 1626687473931)
         return self.db_table.query(KeyConditionExpression=query)['Items']
 
     def scan_db(self):
@@ -34,17 +35,16 @@ class Plotter:
         self.db = DbDriver(keys=self._get_keys(), table='vayyar_home_c2c_room_status')
 
         self.start_timestamp = round(time.time() * 1000)
-        #self.start_timestamp = 1626686100002
 
         fig = pyplot.figure()
         self.live_plot = fig.add_subplot(2, 1, 1)
         self.yesterday_plot = fig.add_subplot(2, 1, 2)
 
-        _ = animation.FuncAnimation(fig, self.plot_live, interval=300000)
-        #self.plot_live(None)
+        _ = animation.FuncAnimation(fig, self.plot_live, interval=60000)
         self.plot_yesterday_room_occupation()
 
-        fig.autofmt_xdate()
+        pyplot.setp(self.live_plot.get_xticklabels(), rotation=30, ha='right')
+        pyplot.setp(self.yesterday_plot.get_xticklabels(), rotation=30, ha='right')
         pyplot.show()
 
     @staticmethod
@@ -55,11 +55,13 @@ class Plotter:
     def plot_live(self, _):
         data = self.db.query_db(oldest_timestamp=self.start_timestamp)
         self._plot_data(sub_plot=self.live_plot, data=data)
+        self.live_plot.set_title("Live monitoring")
 
     def plot_yesterday_room_occupation(self):
         timestamp_yesterday = self.start_timestamp - 86400000
         yesterday_data = self.db.query_db(oldest_timestamp=timestamp_yesterday, untill_timestamp=self.start_timestamp)
         self._plot_data(sub_plot=self.yesterday_plot, data=yesterday_data)
+        self.yesterday_plot.set_title("Occupance past day")
 
     def _plot_data(self, sub_plot: matplotlib.pyplot.subplot, data: list):
         x = []
@@ -68,10 +70,6 @@ class Plotter:
             dt, room_occupied = self._parse_data_entry(entry=item)
             x.append(dt)
             y.append(room_occupied)
-
-        date_fmt = '%d-%m-%y %H:%M:%S'
-        date_formatter = dates.DateFormatter(date_fmt)
-        sub_plot.xaxis.set_major_formatter(date_formatter)
         sub_plot.step(x, y)
 
     @staticmethod
@@ -81,7 +79,6 @@ class Plotter:
         occupied = 1 if entry.get("room_occupied") else 0
         return dt, occupied
 
-# todo: live plot
 
 if __name__ == '__main__':
     Plotter()
