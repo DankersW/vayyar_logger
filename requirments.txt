@@ -1,1 +1,2 @@
 boto3==1.17.102
+matplotlib==3.4.1
