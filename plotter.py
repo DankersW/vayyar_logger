@@ -33,13 +33,13 @@ class Plotter:
 
     def plot_live(self, _):
         data = self.db.query_db(oldest_timestamp=self.start_timestamp)
-        #data = self.db.query_db(oldest_timestamp=1627945126940)
         self._plot_data(sub_plot=self.live_plot, data=data)
-        if data:
-            self.plot_table(data=data)
+        self.plot_table(data=data)
         self.live_plot.set_title("Live monitoring")
 
     def plot_table(self, data):
+        if not data:
+            return
         table_data = []
         prev_room_status = None
         for item in data:
