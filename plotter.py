@@ -15,10 +15,11 @@ class Plotter:
         self.start_timestamp = round(time() * 1000)
 
         fig = pyplot.figure()
-        self.live_plot = fig.add_subplot(2, 1, 1)
-        self.yesterday_plot = fig.add_subplot(2, 1, 2)
+        self.live_plot = fig.add_subplot(2, 2, 1)
+        self.live_table = fig.add_subplot(2, 2, 2)
+        self.yesterday_plot = fig.add_subplot(2, 2, 3)
 
-        _ = animation.FuncAnimation(fig, self.plot_live, interval=60000)
+        _ = animation.FuncAnimation(fig, self.plot_live, interval=30000)
         self.plot_yesterday_room_occupation()
 
         pyplot.setp(self.live_plot.get_xticklabels(), rotation=30, ha='right')
@@ -33,7 +34,23 @@ class Plotter:
     def plot_live(self, _):
         data = self.db.query_db(oldest_timestamp=self.start_timestamp)
         self._plot_data(sub_plot=self.live_plot, data=data)
+        self.plot_table(data=data)
         self.live_plot.set_title("Live monitoring")
+
+    def plot_table(self, data):
+        if not data:
+            return
+        table_data = []
+        prev_room_status = None
+        for item in data:
+            if item.get('room_occupied') != prev_room_status:
+                dt, room_occupied = self._parse_data_entry(entry=item)
+                li = [dt, room_occupied]
+                table_data.append(li)
+                prev_room_status = item.get('room_occupied')
+        self.live_table.axis('tight')
+        self.live_table.axis('off')
+        self.live_table.table(cellText=table_data, colLabels=["timestamp", "room_occupied"])
 
     def plot_yesterday_room_occupation(self):
         timestamp_yesterday = self.start_timestamp - 86400000
