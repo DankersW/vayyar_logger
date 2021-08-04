@@ -50,7 +50,7 @@ class Plotter:
                 prev_room_status = item.get('room_occupied')
         self.live_table.axis('tight')
         self.live_table.axis('off')
-        self.live_table.table(cellText=table_data, colLabels=["timestamp", "room_occupied"], loc='center')
+        self.live_table.table(cellText=table_data, colLabels=["timestamp", "room_occupied"])
 
     def plot_yesterday_room_occupation(self):
         timestamp_yesterday = self.start_timestamp - 86400000
