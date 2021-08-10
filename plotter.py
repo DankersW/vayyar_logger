@@ -18,6 +18,7 @@ class Plotter:
         self.live_plot = fig.add_subplot(2, 2, 1)
         self.live_table = fig.add_subplot(2, 2, 2)
         self.yesterday_plot = fig.add_subplot(2, 2, 3)
+        self.fall_table = fig.add_subplot(2, 2, 4)
 
         _ = animation.FuncAnimation(fig, self.plot_live, interval=30000)
         self.plot_yesterday_room_occupation()
