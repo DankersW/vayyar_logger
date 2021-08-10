@@ -36,9 +36,8 @@ class Plotter:
             return safe_load(config_file)
 
     def plot_live(self, _):
-        #data = self.db_room.query_db(oldest_timestamp=self.start_timestamp)
-        presence_data = self.db_room.query_db(oldest_timestamp=1628586788117)
-        fall_data = self.db_fall.query_db(oldest_timestamp=1628586788117)
+        presence_data = self.db_room.query_db(oldest_timestamp=self.start_timestamp)
+        fall_data = self.db_fall.query_db(oldest_timestamp=self.start_timestamp)
         self._plot_data(sub_plot=self.live_plot, data=presence_data)
         self.show_events(presence_data=presence_data, fall_data=fall_data)
         self.live_plot.set_title("Live monitoring")
@@ -46,24 +45,13 @@ class Plotter:
     def show_events(self, presence_data, fall_data):
         if not presence_data and not fall_data:
             return
-        table_data = []
         data = self._combine_data_tables(presence_data=presence_data, fall_data=fall_data)
-        print(data)
-        """
-        prev_room_status = None
-        for item in presence_data:
-            if item.get('room_occupied') != prev_room_status:
-                dt, room_occupied = self._parse_data_entry(entry=item)
-                li = [dt, room_occupied]
-                table_data.append(li)
-                prev_room_status = item.get('room_occupied')
-                data.append(item)
-        data += fall_data
-        sorted_events = sorted(data, key=itemgetter('timestamp'))
-        print(sorted_events)
-        """
-
-        exit(1)
+        table_data = []
+        for item in data:
+            dt = self._decimal_timestamp_to_dt(timestamp=item.get('timestamp'))
+            msg = self._fetch_event_msg(entry=item)
+            li = [dt, msg]
+            table_data.append(li)
         self.live_table.axis('tight')
         self.live_table.axis('off')
         self.live_table.table(cellText=table_data, colLabels=["timestamp", "event"])
@@ -78,6 +66,15 @@ class Plotter:
                 data.append(item)
         data += fall_data
         return sorted(data, key=itemgetter('timestamp'))
+
+    @staticmethod
+    def _fetch_event_msg(entry: dict) -> str:
+        if 'fall_status' in entry:
+            return entry.get('fall_status')
+        elif 'room_occupied' in entry:
+            return f"room occupied: {entry.get('room_occupied')}"
+        else:
+            print(entry)
 
     def plot_yesterday_room_occupation(self):
         timestamp_yesterday = self.start_timestamp - 86400000
