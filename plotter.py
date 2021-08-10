@@ -40,14 +40,16 @@ class Plotter:
         presence_data = self.db_room.query_db(oldest_timestamp=1628586788117)
         fall_data = self.db_fall.query_db(oldest_timestamp=1628586788117)
         self._plot_data(sub_plot=self.live_plot, data=presence_data)
-        self.plot_table(presence_data=presence_data, fall_data=fall_data)
+        self.show_events(presence_data=presence_data, fall_data=fall_data)
         self.live_plot.set_title("Live monitoring")
 
-    def plot_table(self, presence_data, fall_data):
+    def show_events(self, presence_data, fall_data):
         if not presence_data and not fall_data:
             return
         table_data = []
-        data = []
+        data = self._combine_data_tables(presence_data=presence_data, fall_data=fall_data)
+        print(data)
+        """
         prev_room_status = None
         for item in presence_data:
             if item.get('room_occupied') != prev_room_status:
@@ -59,11 +61,23 @@ class Plotter:
         data += fall_data
         sorted_events = sorted(data, key=itemgetter('timestamp'))
         print(sorted_events)
+        """
 
         exit(1)
         self.live_table.axis('tight')
         self.live_table.axis('off')
         self.live_table.table(cellText=table_data, colLabels=["timestamp", "event"])
+
+    @staticmethod
+    def _combine_data_tables(presence_data: list, fall_data: list) -> list:
+        data = []
+        prev_room_status = None
+        for item in presence_data:
+            if item.get('room_occupied') != prev_room_status:
+                prev_room_status = item.get('room_occupied')
+                data.append(item)
+        data += fall_data
+        return sorted(data, key=itemgetter('timestamp'))
 
     def plot_yesterday_room_occupation(self):
         timestamp_yesterday = self.start_timestamp - 86400000
