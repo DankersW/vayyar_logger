@@ -10,7 +10,7 @@ from db_driver import DbDriver
 
 class Plotter:
     def __init__(self):
-        self.db = DbDriver(keys=self._get_keys(), table='vayyar_home_c2c_room_status')
+        self.db_room = DbDriver(keys=self._get_keys(), table='vayyar_home_c2c_room_status')
 
         self.start_timestamp = round(time() * 1000)
 
@@ -18,7 +18,7 @@ class Plotter:
         self.live_plot = fig.add_subplot(2, 2, 1)
         self.live_table = fig.add_subplot(2, 2, 2)
         self.yesterday_plot = fig.add_subplot(2, 2, 3)
-        self.fall_table = fig.add_subplot(2, 2, 4)
+        #self.fall_table = fig.add_subplot(2, 2, 4)
 
         _ = animation.FuncAnimation(fig, self.plot_live, interval=30000)
         self.plot_yesterday_room_occupation()
@@ -33,7 +33,8 @@ class Plotter:
             return safe_load(config_file)
 
     def plot_live(self, _):
-        data = self.db.query_db(oldest_timestamp=self.start_timestamp)
+        #data = self.db_room.query_db(oldest_timestamp=self.start_timestamp)
+        data = self.db_room.query_db(oldest_timestamp=1628586788117)
         self._plot_data(sub_plot=self.live_plot, data=data)
         self.plot_table(data=data)
         self.live_plot.set_title("Live monitoring")
@@ -55,8 +56,8 @@ class Plotter:
 
     def plot_yesterday_room_occupation(self):
         timestamp_yesterday = self.start_timestamp - 86400000
-        yesterday_data = self.db.query_db(oldest_timestamp=timestamp_yesterday, untill_timestamp=self.start_timestamp)
-        self._plot_data(sub_plot=self.yesterday_plot, data=yesterday_data)
+        data = self.db_room.query_db(oldest_timestamp=timestamp_yesterday, untill_timestamp=self.start_timestamp)
+        self._plot_data(sub_plot=self.yesterday_plot, data=data)
         self.yesterday_plot.set_title("Occupance past day")
 
     def _plot_data(self, sub_plot: pyplot.subplot, data: list):
