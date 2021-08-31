@@ -22,7 +22,7 @@ class Plotter:
         self.live_table = fig.add_subplot(2, 2, 2)
         self.yesterday_plot = fig.add_subplot(2, 2, 3)
 
-        _ = animation.FuncAnimation(fig, self.plot_live, interval=10000)
+        _ = animation.FuncAnimation(fig, self.plot_live, interval=5000)
         self.plot_yesterday_room_occupation()
 
         pyplot.setp(self.live_plot.get_xticklabels(), rotation=30, ha='right')

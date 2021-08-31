@@ -9,6 +9,7 @@ Presentation: https://vinngroup-my.sharepoint.com/:p:/g/personal/woda_vinngroup_
 - BOM
 - Cloud architecture
 - Demo
+- Pitfals
 
 Senario:
 Have the monitor setup, Seeing that the room is free, have one person walk in the room sitting down for a 
@@ -16,8 +17,9 @@ couple of minutes, walking out, closing the door.
 
 Do the same senario as 1) but with 2 people.
 
-Walking in and out very often
+Walking in and out very 3 times
 
 Triggering a fall message
 
 Walking around the edges of the room outside
+
