@@ -10,5 +10,14 @@ Presentation: https://vinngroup-my.sharepoint.com/:p:/g/personal/woda_vinngroup_
 - Cloud architecture
 - Demo
 
-Senario: 
+Senario:
+Have the monitor setup, Seeing that the room is free, have one person walk in the room sitting down for a 
+couple of minutes, walking out, closing the door.
 
+Do the same senario as 1) but with 2 people.
+
+Walking in and out very often
+
+Triggering a fall message
+
+Walking around the edges of the room outside
