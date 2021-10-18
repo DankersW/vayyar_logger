@@ -17,11 +17,8 @@ class WeldcloudOverlay:
     def __init__(self, filename: Path):
         self.db_room = DbDriver(keys=self._get_keys(), table='vayyar_home_c2c_room_status')
         self.weldcloud_data = self.parse_weldcloud_data(file=filename)
-        print(self.weldcloud_data)
         min_ts, max_ts = self.get_min_max_timestamp()
-        print(min_ts, max_ts)
         self.vayyar_data = self.get_room_data(youngest_ts=min_ts, oldest_ts=max_ts)
-
         self.plot_data()
 
     def parse_weldcloud_data(self, file: Path) -> list:
@@ -45,7 +42,6 @@ class WeldcloudOverlay:
         return self._parse_cloud_data(cloud_data=cloud_data)
 
     def plot_data(self):
-
         weldcloud_x, weldcloud_y = self._get_plot_data(data=self.weldcloud_data)
         vayyar_x, vayyar_y = self._get_plot_data(data=self.vayyar_data)
 
@@ -54,19 +50,15 @@ class WeldcloudOverlay:
         weldcloud = fig.add_subplot(3, 1, 2)
         vayyar = fig.add_subplot(3, 1, 3)
 
-        #together.step(vayyar_x, vayyar_y, label="vayyar", color="orange")
-        #together.plot(vayyar_x, vayyar_y, label="vayyar", color="orange")
-        #together.step(weldcloud_x, weldcloud_y, label="weldcloud", color="green")
+        together.step(vayyar_x, vayyar_y, label="vayyar", color="orange")
         together.step(weldcloud_x, weldcloud_y, label="weldcloud", color="green")
 
-
-        #vayyar.step(vayyar_x, vayyar_y, label="vayyar", color="orange")
-        #weldcloud.step(weldcloud_x, weldcloud_y, label="weldcloud", color="green")
+        vayyar.step(vayyar_x, vayyar_y, label="vayyar", color="orange")
+        weldcloud.step(weldcloud_x, weldcloud_y, label="weldcloud", color="green")
 
         together.legend()
         vayyar.legend()
         weldcloud.legend()
-        # Display a figure.
         pyplot.show()
 
     @staticmethod
