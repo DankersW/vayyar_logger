@@ -1,5 +1,13 @@
-import openpyxl
+from typing import Tuple
+from datetime import datetime
 from pathlib import Path
+from decimal import Decimal
+
+from yaml import safe_load
+from matplotlib import pyplot
+import openpyxl
+
+from db_driver import DbDriver
 
 
 class WeldcloudOverlay:
@@ -8,7 +16,13 @@ class WeldcloudOverlay:
     col_arc_time = 3
 
     def __init__(self, filename: Path):
-        self.data = self.parse_weldcloud_data(file=filename)
+        self.db_room = DbDriver(keys=self._get_keys(), table='vayyar_home_c2c_room_status')
+        self.weldcloud_data = self.parse_weldcloud_data(file=filename)
+        print(self.weldcloud_data)
+        min_ts, max_ts = self.get_min_max_timestamp()
+        print(min_ts, max_ts)
+        #self.vayyar_data = self.get_room_data(youngest_ts=min_ts, oldest_ts=max_ts)
+        #print(self.vayyar_data)
 
     def parse_weldcloud_data(self, file: Path) -> list:
         xlsx = openpyxl.load_workbook(file).active
@@ -16,13 +30,27 @@ class WeldcloudOverlay:
         for row in range(self.row_first_data, xlsx.max_row):
             start_timestamp = xlsx.cell(row=row, column=self.col_event_created, value=None).value
             arc_time = xlsx.cell(row=row, column=self.col_arc_time, value=None).value
-            duration = self.arc_time_to_millisec(arc_time)
-            data_enty = self.construct_data_entry(start_timestamp=int(start_timestamp), duration=duration)
+            duration = self._arc_time_to_millisec(arc_time)
+            data_enty = self._construct_data_entry(start_timestamp=int(start_timestamp), duration=duration)
             data.extend(data_enty)
         return data
 
+    def get_min_max_timestamp(self) -> Tuple[int, int]:
+        min_ts = self.weldcloud_data[0].get("timestamp")
+        max_ts = self.weldcloud_data[-1].get("timestamp")
+        return min_ts, max_ts
+
+    def get_room_data(self, oldest_ts, youngest_ts) -> list:
+        cloud_data = self.db_room.query_db(oldest_timestamp=oldest_ts, untill_timestamp=youngest_ts)
+        return self._parse_cloud_data(cloud_data=cloud_data)
+
     @staticmethod
-    def arc_time_to_millisec(arc_time: str) -> int:
+    def _get_keys():
+        with open("keys.yml") as config_file:
+            return safe_load(config_file)
+
+    @staticmethod
+    def _arc_time_to_millisec(arc_time: str) -> int:
         time_values = arc_time.split(sep=' ')
         duration = 0
         if any("minute" in time_value for time_value in time_values):
@@ -32,13 +60,27 @@ class WeldcloudOverlay:
         return duration
 
     @staticmethod
-    def construct_data_entry(start_timestamp: int, duration: int) -> list:
+    def _construct_data_entry(start_timestamp: int, duration: int) -> list:
         data = []
         if duration != 0:
             data = [{"timestamp": start_timestamp, "welding": 1}, {"timestamp": start_timestamp + duration, "welding": 0}]
         return data
 
+    @staticmethod
+    def _decimal_timestamp_to_dt(timestamp: Decimal) -> datetime:
+        return datetime.fromtimestamp(timestamp.__int__() / 1000)
+
+    @staticmethod
+    def _parse_cloud_data(cloud_data: dict) -> list:
+        data = []
+        for item in cloud_data:
+            timestamp = item.get("timestamp").__int__()
+            occupied = 1 if item.get("room_occupied") else 0
+            entry = {"timestamp": timestamp, "room_occupied": occupied}
+            data.append(entry)
+        return data
+
+
 if __name__ == '__main__':
-    parse_weldcloud_csv()
     filepath = Path("data/Weldcloud_Export_Weldsessions.xlsx")
     WeldcloudOverlay(filename=filepath)

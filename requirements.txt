@@ -1,3 +1,5 @@
 boto3==1.17.102
 matplotlib==3.4.1
 openpyxl==3.0.9
+
+PyYAML~=5.3.1
