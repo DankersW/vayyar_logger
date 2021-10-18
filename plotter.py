@@ -1,4 +1,4 @@
-from live_plotter import DayPlotter
+from live_plotter import LivePlotter
 
 if __name__ == '__main__':
-    DayPlotter()
+    LivePlotter()

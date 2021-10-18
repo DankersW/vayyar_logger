@@ -10,7 +10,7 @@ from matplotlib import pyplot, animation
 from db_driver import DbDriver
 
 
-class DayPlotter:
+class LivePlotter:
     def __init__(self):
         self.db_room = DbDriver(keys=self._get_keys(), table='vayyar_home_c2c_room_status')
         self.db_fall = DbDriver(keys=self._get_keys(), table='vayyar_home_c2c_fall_data')
@@ -101,4 +101,4 @@ class DayPlotter:
 
 
 if __name__ == '__main__':
-    DayPlotter()
+    LivePlotter()
