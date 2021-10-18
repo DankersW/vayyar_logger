@@ -55,13 +55,13 @@ class WeldcloudOverlay:
         vayyar = fig.add_subplot(3, 1, 3)
 
         #together.step(vayyar_x, vayyar_y, label="vayyar", color="orange")
-        together.plot(vayyar_x, vayyar_y, label="vayyar", color="orange")
+        #together.plot(vayyar_x, vayyar_y, label="vayyar", color="orange")
         #together.step(weldcloud_x, weldcloud_y, label="weldcloud", color="green")
-        together.plot(weldcloud_x, weldcloud_y, label="weldcloud", color="green")
+        together.step(weldcloud_x, weldcloud_y, label="weldcloud", color="green")
 
 
-        vayyar.step(vayyar_x, vayyar_y, label="vayyar", color="orange")
-        weldcloud.step(weldcloud_x, weldcloud_y, label="weldcloud", color="green")
+        #vayyar.step(vayyar_x, vayyar_y, label="vayyar", color="orange")
+        #weldcloud.step(weldcloud_x, weldcloud_y, label="weldcloud", color="green")
 
         together.legend()
         vayyar.legend()
@@ -88,7 +88,10 @@ class WeldcloudOverlay:
     def _construct_data_entry(start_timestamp: int, duration: int) -> list:
         data = []
         if duration != 0:
-            data = [{"timestamp": start_timestamp, "welding": 1}, {"timestamp": start_timestamp + duration, "welding": 0}]
+            data = [{"timestamp": start_timestamp - 1, "welding": 0},
+                    {"timestamp": start_timestamp, "welding": 1},
+                    {"timestamp": start_timestamp + duration, "welding": 1},
+                    {"timestamp": start_timestamp + duration + 1, "welding": 0}]
         return data
 
     @staticmethod
