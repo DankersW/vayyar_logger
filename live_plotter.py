@@ -23,7 +23,7 @@ class LivePlotter:
         self.yesterday_plot = fig.add_subplot(2, 2, 3)
 
         _ = animation.FuncAnimation(fig, self.plot_live, interval=5000)
-        self.plot_yesterday_room_occupation()
+        self.plot_past_room_occupation()
 
         pyplot.setp(self.live_plot.get_xticklabels(), rotation=30, ha='right')
         pyplot.setp(self.yesterday_plot.get_xticklabels(), rotation=30, ha='right')
@@ -75,11 +75,16 @@ class LivePlotter:
         else:
             print(entry)
 
-    def plot_yesterday_room_occupation(self):
-        timestamp_yesterday = self.start_timestamp - 86400000
+    @staticmethod
+    def days_to_millisec(days: int) -> int :
+        return days * 86400000
+
+    def plot_past_room_occupation(self):
+        past_days = 3
+        timestamp_yesterday = self.start_timestamp - self.days_to_millisec(days=past_days)
         data = self.db_room.query_db(oldest_timestamp=timestamp_yesterday, untill_timestamp=self.start_timestamp)
         self._plot_data(sub_plot=self.yesterday_plot, data=data)
-        self.yesterday_plot.set_title("Occupance past day")
+        self.yesterday_plot.set_title(f"Occupance past {past_days} day(s)")
 
     def _plot_data(self, sub_plot: pyplot.subplot, data: list):
         x = []
