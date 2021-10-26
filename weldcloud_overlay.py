@@ -1,6 +1,7 @@
 from typing import Tuple
 from datetime import datetime
 from pathlib import Path
+from dateutil import parser
 
 from yaml import safe_load
 from matplotlib import pyplot
@@ -25,10 +26,11 @@ class WeldcloudOverlay:
         xlsx = openpyxl.load_workbook(file).active
         data = []
         for row in range(self.row_first_data, xlsx.max_row):
-            start_timestamp = xlsx.cell(row=row, column=self.col_event_created, value=None).value
+            created_time = xlsx.cell(row=row, column=self.col_event_created, value=None).value
+            start_timestamp = self._time_to_timestamp(time=created_time)
             arc_time = xlsx.cell(row=row, column=self.col_arc_time, value=None).value
             duration = self._arc_time_to_millisec(arc_time)
-            data_enty = self._construct_data_entry(start_timestamp=int(start_timestamp), duration=duration)
+            data_enty = self._construct_data_entry(start_timestamp=start_timestamp, duration=duration)
             data.extend(data_enty)
         return data
 
@@ -67,13 +69,21 @@ class WeldcloudOverlay:
             return safe_load(config_file)
 
     @staticmethod
+    def _time_to_timestamp(time: str) -> int:
+        if time.isdigit():
+            return int(time)
+        else:
+            return int(parser.parse(time).timestamp()) * 1000
+
+    @staticmethod
     def _arc_time_to_millisec(arc_time: str) -> int:
         time_values = arc_time.split(sep=' ')
         duration = 0
-        if any("minute" in time_value for time_value in time_values):
-            duration += int(time_values[0]) * 60000
-        if any("second" in time_value for time_value in time_values):
-            duration += int(time_values[-2]) * 1000
+
+        if any("m" in time_value for time_value in time_values):
+            duration += int(time_values[0][:-1]) * 60000
+        if any("s" in time_value for time_value in time_values):
+            duration += int(time_values[-1][:-1]) * 1000
         return duration
 
     @staticmethod

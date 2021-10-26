@@ -76,7 +76,7 @@ class LivePlotter:
             print(entry)
 
     @staticmethod
-    def days_to_millisec(days: int) -> int :
+    def days_to_millisec(days: int) -> int:
         return days * 86400000
 
     def plot_past_room_occupation(self):
