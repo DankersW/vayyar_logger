@@ -1,8 +1,10 @@
 from pathlib import Path
 from dataclasses import dataclass
 
+from threading import Thread
+
 from live_plotter import LivePlotter
-from weldcloud_overlay import WeldcloudOverlay
+from post_plotter import PostPlotter
 
 
 @dataclass(unsafe_hash=True)
@@ -13,15 +15,25 @@ class Config:
     manual_overlay: bool = False
     manaul_data: Path = Path("data/manual_overlay.xlsx")
 
+    def __post_init__(self):
+        self.post_plotter: bool = self.manual_overlay or self.weldcloud_overlay
+        counter = 0
+        for overlay in [self.weldcloud_overlay, self.manual_overlay, self.post_plotter]:
+            if overlay:
+                counter += 1
+        self.overlay_counter = counter
+
 
 if __name__ == '__main__':
+    config = Config(live_monitor=False, weldcloud_overlay=False, manual_overlay=True)
 
-    config = Config(live_monitor=False, weldcloud_overlay=True, manual_overlay=True)
-    print(config)
+    threads = []
+    for plotter in [LivePlotter, PostPlotter]:
+        thread = Thread(target=plotter, args=(config,))
+        threads.append(thread)
 
-    live_thread = Thr
+    for thread in threads:
+        thread.start()
 
-    #weldcloud_data = Path()
-
-    #LivePlotter()
-    #WeldcloudOverlay(filename=weldcloud_data)
+    for thread in threads:
+        thread.join()

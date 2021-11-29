@@ -5,29 +5,32 @@ from typing import Tuple
 from decimal import Decimal
 from operator import itemgetter
 
+from dataclasses import dataclass
+
 from matplotlib import pyplot, animation
 
 from db_driver import DbDriver
 
 
 class LivePlotter:
-    def __init__(self):
-        self.db_room = DbDriver(keys=self._get_keys(), table='vayyar_home_c2c_room_status')
-        self.db_fall = DbDriver(keys=self._get_keys(), table='vayyar_home_c2c_fall_data')
+    def __init__(self, config: dataclass):
+        if config.live_monitor:
+            self.db_room = DbDriver(keys=self._get_keys(), table='vayyar_home_c2c_room_status')
+            self.db_fall = DbDriver(keys=self._get_keys(), table='vayyar_home_c2c_fall_data')
 
-        self.start_timestamp = round(time() * 1000)
+            self.start_timestamp = round(time() * 1000)
 
-        fig = pyplot.figure()
-        self.live_plot = fig.add_subplot(2, 2, 1)
-        self.live_table = fig.add_subplot(2, 2, 2)
-        self.yesterday_plot = fig.add_subplot(2, 2, 3)
+            fig = pyplot.figure()
+            self.live_plot = fig.add_subplot(2, 2, 1)
+            self.live_table = fig.add_subplot(2, 2, 2)
+            self.yesterday_plot = fig.add_subplot(2, 2, 3)
 
-        _ = animation.FuncAnimation(fig, self.plot_live, interval=5000)
-        self.plot_past_room_occupation()
+            _ = animation.FuncAnimation(fig, self.plot_live, interval=5000)
+            self.plot_past_room_occupation()
 
-        pyplot.setp(self.live_plot.get_xticklabels(), rotation=30, ha='right')
-        pyplot.setp(self.yesterday_plot.get_xticklabels(), rotation=30, ha='right')
-        pyplot.show()
+            pyplot.setp(self.live_plot.get_xticklabels(), rotation=30, ha='right')
+            pyplot.setp(self.yesterday_plot.get_xticklabels(), rotation=30, ha='right')
+            pyplot.show()
 
     @staticmethod
     def _get_keys():
