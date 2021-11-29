@@ -125,5 +125,5 @@ class WeldcloudOverlay:
 
 
 if __name__ == '__main__':
-    filepath = Path("data/Weldcloud_Export_Weldsessions.xlsx")
+    filepath = Path("data/Weldcloud_overlay.xlsx")
     WeldcloudOverlay(filename=filepath)

@@ -1,4 +1,4 @@
-# vayyar_plotter
+# Vayyar plotter
 
 Add a file called ```keys.yml``` with the following info
 ```yml
@@ -12,5 +12,5 @@ aws_secret_key: "" # AWS Secret Access Key
 ## Run
 
 ```sh
-python3 plotter.py
+python3 vayyar_plotter.py
 ```
