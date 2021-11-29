@@ -7,6 +7,7 @@ from matplotlib import pyplot
 
 from vayyar_overlay import VayyarOverlay
 from weldcloud_overlay import WeldcloudOverlay
+from manual_overlay import ManualOverlay
 
 
 class PostPlotter:
@@ -16,8 +17,12 @@ class PostPlotter:
             wc_overlay = WeldcloudOverlay(filename=config.weldcloud_data)
             self.overlays.append(wc_overlay.get_overlay_data())
 
+        if config.manual_overlay:
+            manual_overlay = ManualOverlay(filename=config.manaul_data)
+            self.overlays.append(manual_overlay.get_overlay_data())
+
         if config.post_plotter:
-            min_ts, max_ts = self.get_min_max_timestamp()
+            min_ts, max_ts = self.get_min_max_timestamp(config)
             vayyay_overlay = VayyarOverlay(min_ts, max_ts)
             self.overlays.append(vayyay_overlay.get_overlay_data())
             self.plot_data(config.overlay_counter)
