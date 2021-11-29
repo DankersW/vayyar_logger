@@ -22,9 +22,10 @@ class PostPlotter:
             self.overlays.append(vayyay_overlay.get_overlay_data())
             self.plot_data(config.overlay_counter)
 
-    def get_min_max_timestamp(self) -> (int, int):
+    def get_min_max_timestamp(self, config: dataclass) -> (int, int):
         if len(self.overlays) == 0:
             return round(time() * 1000), round(time() * 1000) - 86400000
+
         min_ts = round(time() * 1000)
         max_ts = 0
         for item in self.overlays:
