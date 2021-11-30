@@ -34,9 +34,6 @@ txt_label.grid(row=0, column=1, sticky="nsew")
 
 window.mainloop()
 
-for i in data:
-    print(i)
-
 wb = openpyxl.Workbook()
 sheet = wb.active
 for i, val in enumerate(data):

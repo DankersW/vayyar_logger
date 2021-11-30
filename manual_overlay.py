@@ -10,6 +10,8 @@ class ManualOverlay:
     def _parse_data(self) -> list:
         xlsx = openpyxl.load_workbook(self.filename).active
         data = []
+        start_t = xlsx.cell(row=1, column=1, value=None).value
+        data.append({"timestamp": start_t-1, "room_occupied": False})
         for row in range(xlsx.max_row):
             timestamp = xlsx.cell(row=row+1, column=1, value=None).value
             room_status = xlsx.cell(row=row+1, column=2, value=None).value
