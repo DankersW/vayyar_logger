@@ -13,23 +13,27 @@ from manual_overlay import ManualOverlay
 class PostPlotter:
     def __init__(self, config: dataclass):
         self.overlays = []
-        if config.weldcloud_overlay:
-            wc_overlay = WeldcloudOverlay(filename=config.weldcloud_data)
-            self.overlays.append(wc_overlay.get_overlay_data())
 
         if config.manual_overlay:
             manual_overlay = ManualOverlay(filename=config.manaul_data)
             self.overlays.append(manual_overlay.get_overlay_data())
 
+        if config.weldcloud_overlay:
+            wc_overlay = WeldcloudOverlay(filename=config.weldcloud_data)
+            self.overlays.append(wc_overlay.get_overlay_data())
+
         if config.post_plotter:
             min_ts, max_ts = self.get_min_max_timestamp(config)
             vayyay_overlay = VayyarOverlay(min_ts, max_ts)
             self.overlays.append(vayyay_overlay.get_overlay_data())
-            self.plot_data(config.overlay_counter)
+            self.plot_data(config.overlay_counter, min_ts, max_ts)
 
     def get_min_max_timestamp(self, config: dataclass) -> (int, int):
         if len(self.overlays) == 0:
             return round(time() * 1000), round(time() * 1000) - 86400000
+
+        if config.manual_overlay:
+            return self.overlays[0].get("min"), self.overlays[0].get("max")
 
         min_ts = round(time() * 1000)
         max_ts = 0
@@ -40,23 +44,26 @@ class PostPlotter:
                 max_ts = item.get("max")
         return min_ts, max_ts
 
-    def plot_data(self, overlay_count: int):
+    def plot_data(self, overlay_count: int, xmin: int, xmax: int):
         fig = pyplot.figure()
         combined = fig.add_subplot(overlay_count+1, 1, 1)
         for i, overlay in enumerate(self.overlays):
             sub_plot = fig.add_subplot(overlay_count+1, 1, i+2)
-            x, y = self._get_plot_data(data=overlay.get("data"))
+            x, y = self._get_plot_data(data=overlay.get("data"), xmin=xmin, xmax=xmax)
             sub_plot.step(x, y, label=overlay.get("label"), color=overlay.get("color"))
             combined.step(x, y, label=overlay.get("label"), color=overlay.get("color"))
             sub_plot.legend()
         combined.legend()
         pyplot.show()
 
-    def _get_plot_data(self, data: list) -> Tuple[list, list]:
+    def _get_plot_data(self, data: list, xmin: int, xmax: int) -> Tuple[list, list]:
         x = []
         y = []
         for item in data:
-            _x = self._decimal_timestamp_to_dt(item.get("timestamp"))
+            ts = item.get("timestamp")
+            if ts > xmin or ts < xmax:
+                continue
+            _x = self._decimal_timestamp_to_dt(ts)
             if "welding" in item:
                 _y = item.get("welding")
             else:

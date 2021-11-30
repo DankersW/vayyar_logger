@@ -14,7 +14,6 @@ class ManualOverlay:
             timestamp = xlsx.cell(row=row+1, column=1, value=None).value
             room_status = xlsx.cell(row=row+1, column=2, value=None).value
             data.append({"timestamp": timestamp, "room_occupied": room_status})
-        print(data)
         return data
 
     def get_overlay_data(self) -> dict:

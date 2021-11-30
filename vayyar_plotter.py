@@ -11,7 +11,7 @@ from post_plotter import PostPlotter
 class Config:
     live_monitor: bool = False
     weldcloud_overlay: bool = False
-    weldcloud_data: Path = Path("data/Weldcloud_overlay.xlsx")
+    weldcloud_data: Path = Path("data/weldcloud_overlay.xlsx")
     manual_overlay: bool = False
     manaul_data: Path = Path("data/manual_overlay.xlsx")
 
@@ -25,7 +25,7 @@ class Config:
 
 
 if __name__ == '__main__':
-    config = Config(live_monitor=False, weldcloud_overlay=False, manual_overlay=True)
+    config = Config(live_monitor=False, weldcloud_overlay=True, manual_overlay=True)
 
     threads = []
     for plotter in [LivePlotter, PostPlotter]:
