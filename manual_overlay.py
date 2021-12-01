@@ -25,10 +25,6 @@ class ManualOverlay:
             if prev_item != status:
                 data.append({"timestamp": timestamp-1, "room_occupied": prev_item})
             data.append({"timestamp": timestamp, "room_occupied": status})
-
-        for i in data:
-            print(i)
-        #exit(1)
         return data
 
     @staticmethod
