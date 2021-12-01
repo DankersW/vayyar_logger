@@ -24,8 +24,8 @@ class PostPlotter:
 
         if config.post_plotter:
             min_ts, max_ts = self.get_min_max_timestamp(config)
-            #vayyay_overlay = VayyarOverlay(min_ts, max_ts)
-            #self.overlays.append(vayyay_overlay.get_overlay_data())
+            vayyay_overlay = VayyarOverlay(min_ts, max_ts)
+            self.overlays.append(vayyay_overlay.get_overlay_data())
             self.plot_data(config.overlay_counter, min_ts, max_ts)
 
     def get_min_max_timestamp(self, config: dataclass) -> (int, int):
